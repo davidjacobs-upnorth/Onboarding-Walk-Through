@@ -1,0 +1,358 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--color-text-primary); }
+  .page { padding: 1.5rem 0; max-width: 680px; }
+  .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 0.75rem; }
+  .section-title { font-size: 20px; font-weight: 500; margin-bottom: 0.5rem; }
+  .section-sub { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 1.5rem; line-height: 1.6; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; cursor: pointer; }
+  .stage-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+  .stage-title { font-size: 15px; font-weight: 500; flex: 1; }
+  .chevron { font-size: 12px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(90deg); }
+  .stage-body { display: none; padding-top: 0.75rem; border-top: 0.5px solid var(--color-border-tertiary); margin-top: 0.75rem; }
+  .stage-body.open { display: block; }
+  .stage-purpose { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 0.75rem; }
+  .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 0.75rem; }
+  .field-pill { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 4px 10px; font-size: 12px; color: var(--color-text-secondary); }
+  .exit-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
+  .exit-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; margin-top: 5px; flex-shrink: 0; }
+  .tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: var(--border-radius-md); }
+  .tag-smb { background: #E6F1FB; color: #0C447C; }
+  .tag-muo { background: #EEEDFE; color: #3C3489; }
+  .tag-warn { background: #FAECE7; color: #712B13; }
+  .tag-ok { background: #EAF3DE; color: #27500A; }
+  .divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1.5rem 0; }
+  .formula-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
+  .formula-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .formula-code { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-secondary); background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 4px; padding: 4px 8px; display: inline-block; }
+  .weight-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .weight-label { font-size: 13px; color: var(--color-text-secondary); min-width: 130px; }
+  .weight-bar-bg { flex: 1; height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; }
+  .weight-bar { height: 100%; border-radius: 3px; }
+  .weight-pct { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); min-width: 32px; text-align: right; }
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 1rem; }
+  .metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.875rem 1rem; }
+  .metric-label { font-size: 12px; color: var(--color-text-tertiary); margin-bottom: 4px; }
+  .metric-val { font-size: 20px; font-weight: 500; }
+  .nav { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .nav-btn { font-size: 13px; padding: 5px 14px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; transition: all 0.15s; }
+  .nav-btn.active { background: var(--color-text-primary); color: var(--color-background-primary); border-color: transparent; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .progress-bar { display: flex; align-items: center; gap: 4px; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 4px; }
+  .prog-step { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+  .prog-circle { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; }
+  .prog-label { font-size: 9px; color: var(--color-text-tertiary); text-align: center; margin-top: 4px; max-width: 58px; line-height: 1.3; }
+  .prog-line { flex: 1; height: 1px; background: var(--color-border-tertiary); min-width: 12px; }
+  .tip-box { background: #E1F5EE; border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; color: #085041; margin-bottom: 1rem; display: flex; gap: 8px; align-items: flex-start; }
+  .tip-icon { font-size: 14px; flex-shrink: 0; }
+  .view-tabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+  .view-tab { font-size: 12px; padding: 4px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; cursor: pointer; color: var(--color-text-secondary); }
+  .view-tab.active { background: var(--color-background-secondary); color: var(--color-text-primary); font-weight: 500; }
+  .view-content { display: none; }
+  .view-content.active { display: block; }
+  .metric-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 13px; }
+  .metric-row:last-child { border-bottom: none; }
+</style>
+
+<div class="page">
+  <h2 class="sr-only">MoeGo Salesforce Onboarding Pipeline — Leadership & Operations Guide</h2>
+
+  <div class="nav" id="mainNav">
+    <button class="nav-btn active" onclick="switchTab('pipeline')">Pipeline stages</button>
+    <button class="nav-btn" onclick="switchTab('formulas')">Formulas</button>
+    <button class="nav-btn" onclick="switchTab('dashboard')">Dashboard</button>
+  </div>
+
+  <div class="section active" id="pipeline">
+    <p class="section-label">Salesforce Setup</p>
+    <p class="section-title">Onboarding pipeline</p>
+    <p class="section-sub">Treat onboarding like a revenue pipeline — every stage has an owner, a goal, and a clear exit. Tap each stage to expand it.</p>
+
+    <div class="progress-bar">
+      <div class="prog-step"><div class="prog-circle" style="background:#E6F1FB;color:#0C447C;">1</div><div class="prog-label">Closed Won</div></div>
+      <div class="prog-line"></div>
+      <div class="prog-step"><div class="prog-circle" style="background:#EEEDFE;color:#3C3489;">2</div><div class="prog-label">Pre-Setup</div></div>
+      <div class="prog-line"></div>
+      <div class="prog-step"><div class="prog-circle" style="background:#E1F5EE;color:#085041;">3</div><div class="prog-label">Foundation</div></div>
+      <div class="prog-line"></div>
+      <div class="prog-step"><div class="prog-circle" style="background:#E1F5EE;color:#085041;">4</div><div class="prog-label">Activation</div></div>
+      <div class="prog-line"></div>
+      <div class="prog-step"><div class="prog-circle" style="background:#FAEEDA;color:#633806;">5</div><div class="prog-label">Expansion</div></div>
+      <div class="prog-line"></div>
+      <div class="prog-step"><div class="prog-circle" style="background:#EAF3DE;color:#27500A;">6</div><div class="prog-label">Go-Live</div></div>
+      <div class="prog-line"></div>
+      <div class="prog-step"><div class="prog-circle" style="background:#EAF3DE;color:#27500A;">7</div><div class="prog-label">Handoff</div></div>
+      <div class="prog-line"></div>
+      <div class="prog-step"><div class="prog-circle" style="background:#FCEBEB;color:#791F1F;">8</div><div class="prog-label">At Risk</div></div>
+    </div>
+
+    <div class="tip-box"><span class="tip-icon">★</span><span>Start with Option A (Opportunity record type: "Onboarding"). Easier to launch, and you can evolve to a custom object later when you have multiple locations to manage (MUOs).</span></div>
+
+    <!-- Stage 1 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#E6F1FB;color:#0C447C;">1</div>
+        <div class="stage-title">Closed-Won → Onboarding Created</div>
+        <div style="display:flex;gap:6px;"><span class="tag tag-smb">SMB</span><span class="tag tag-muo">MUO</span></div>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Hand off from Sales to Onboarding. This stage exists so nothing falls through the cracks after the deal is signed.</p>
+        <p style="font-size:12px;font-weight:500;color:var(--color-text-tertiary);margin-bottom:6px;">KEY FIELDS</p>
+        <div class="fields-grid">
+          <div class="field-pill">Close Date</div>
+          <div class="field-pill">AE Owner</div>
+          <div class="field-pill">Onboarding Owner</div>
+          <div class="field-pill">Segment</div>
+        </div>
+        <div class="exit-row"><div class="exit-dot"></div><span>Exit when: Kickoff call is scheduled</span></div>
+      </div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#EEEDFE;color:#3C3489;">2</div>
+        <div class="stage-title">Sprint 0 — Pre-Setup</div>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Remove all friction before the first real session. If data isn't ready here, every sprint after it gets delayed.</p>
+        <p style="font-size:12px;font-weight:500;color:var(--color-text-tertiary);margin-bottom:6px;">KEY FIELDS</p>
+        <div class="fields-grid">
+          <div class="field-pill">Data Received ✓</div>
+          <div class="field-pill">Payments Status</div>
+          <div class="field-pill">Integration Required?</div>
+        </div>
+        <div class="exit-row"><div class="exit-dot"></div><span>Exit when: Kickoff completed + data ready (or scope confirmed)</span></div>
+      </div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#E1F5EE;color:#085041;">3</div>
+        <div class="stage-title">Sprint 1 — Foundation</div>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Get the customer operational as fast as possible. The goal is one real booking in MoeGo.</p>
+        <div class="fields-grid">
+          <div class="field-pill">Calendar Config ✓</div>
+          <div class="field-pill">Staff Setup ✓</div>
+          <div class="field-pill">Test Booking ✓</div>
+        </div>
+        <div class="exit-row"><div class="exit-dot"></div><span>Exit when: First booking completed in MoeGo</span></div>
+      </div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#E1F5EE;color:#0F6E56;">4</div>
+        <div class="stage-title">Sprint 2 — Activation</div>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Replace the old workflow. Customer should be running day-to-day inside MoeGo — not alongside it.</p>
+        <div class="fields-grid">
+          <div class="field-pill">Online Booking ✓</div>
+          <div class="field-pill">SMS Automation ✓</div>
+          <div class="field-pill">% Bookings in MoeGo</div>
+        </div>
+        <div class="exit-row"><div class="exit-dot"></div><span>Exit when: Customer is actively using the system for live bookings</span></div>
+      </div>
+    </div>
+
+    <!-- Stage 5 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#FAEEDA;color:#633806;">5</div>
+        <div class="stage-title">Sprint 3 — Expansion</div>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Unlock revenue features. This is where MoeGo starts paying for itself in the customer's mind.</p>
+        <div class="fields-grid">
+          <div class="field-pill">Packages Enabled ✓</div>
+          <div class="field-pill">Upsells Enabled ✓</div>
+          <div class="field-pill">Review Automation ✓</div>
+        </div>
+        <div class="exit-row"><div class="exit-dot"></div><span>Exit when: At least one revenue feature adopted</span></div>
+      </div>
+    </div>
+
+    <!-- Stage 6 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#EAF3DE;color:#27500A;">6</div>
+        <div class="stage-title">Go-Live (Revenue Active)</div>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Customer is fully live. Payments flowing, bookings happening, automation running.</p>
+        <div class="fields-grid">
+          <div class="field-pill">First Payment Date</div>
+          <div class="field-pill">Weekly Booking Vol.</div>
+          <div class="field-pill">Adoption Score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 7 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#EAF3DE;color:#3B6D11;">7</div>
+        <div class="stage-title">Handoff — Closed-Won (Onboarding)</div>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Transition to the long-term CS team. Document health and performance so nothing is lost in handoff.</p>
+        <div class="fields-grid">
+          <div class="field-pill">Time to Go-Live</div>
+          <div class="field-pill">Health Score</div>
+          <div class="field-pill">CSM Assigned</div>
+        </div>
+        <div class="exit-row"><div class="exit-dot"></div><span>Exit when: CSM accepted and first check-in scheduled</span></div>
+      </div>
+    </div>
+
+    <!-- Stage 8 -->
+    <div class="card">
+      <div class="card-header" onclick="toggleStage(this)">
+        <div class="stage-num" style="background:#FCEBEB;color:#791F1F;">8</div>
+        <div class="stage-title">Stalled / At Risk</div>
+        <span class="tag tag-warn" style="margin-left:4px;">Auto-trigger</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="stage-body">
+        <p class="stage-purpose">Catch failures before they become churn. This stage should be a flag, not a destination — move accounts out fast.</p>
+        <div style="margin-bottom:8px;">
+          <div class="field-pill" style="display:inline-block;margin-right:6px;margin-bottom:6px;">No activity in 5–7 days</div>
+          <div class="field-pill" style="display:inline-block;margin-bottom:6px;">Missing critical steps</div>
+        </div>
+        <div class="exit-row"><div class="exit-dot" style="background:#E24B4A;"></div><span>Escalate immediately — assign a rescue owner and replan timeline</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="formulas">
+    <p class="section-label">Core Metrics</p>
+    <p class="section-title">Salesforce formulas</p>
+    <p class="section-sub">These three formulas are what separate a support ticket tracker from a real revenue pipeline. Build them into your record layout so they're always visible.</p>
+
+    <div class="formula-card">
+      <div class="formula-name">Time to Go-Live</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">How long did it take from deal close to the customer going live? Your core efficiency metric.</div>
+      <div class="formula-code">Go_Live_Date − Close_Date</div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-name">Time to First Value (TTFV)</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">When did the customer make their first booking? Earlier = less churn risk.</div>
+      <div class="formula-code">First_Booking_Date − Close_Date</div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-name">Adoption Score (v1)</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">A simple 0–1 score. Are the three core features live? Each one is worth ⅓.</div>
+      <div class="formula-code">( Online_Booking + SMS_Auto + Payments_Live ) / 3</div>
+    </div>
+
+    <hr class="divider">
+
+    <p style="font-size:15px;font-weight:500;margin-bottom:0.5rem;">Health score weights</p>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem;">Payments gets the most weight because it's the clearest signal that MoeGo is truly running the business.</p>
+
+    <div>
+      <div class="weight-row">
+        <span class="weight-label">Payments live</span>
+        <div class="weight-bar-bg"><div class="weight-bar" style="width:40%;background:#1D9E75;"></div></div>
+        <span class="weight-pct">40%</span>
+      </div>
+      <div class="weight-row">
+        <span class="weight-label">Online booking</span>
+        <div class="weight-bar-bg"><div class="weight-bar" style="width:30%;background:#378ADD;"></div></div>
+        <span class="weight-pct">30%</span>
+      </div>
+      <div class="weight-row">
+        <span class="weight-label">SMS automation</span>
+        <div class="weight-bar-bg"><div class="weight-bar" style="width:20%;background:#7F77DD;"></div></div>
+        <span class="weight-pct">20%</span>
+      </div>
+      <div class="weight-row">
+        <span class="weight-label">Usage activity</span>
+        <div class="weight-bar-bg"><div class="weight-bar" style="width:10%;background:#888780;"></div></div>
+        <span class="weight-pct">10%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="dashboard">
+    <p class="section-label">Weekly Review</p>
+    <p class="section-title">Dashboard</p>
+    <p class="section-sub">Three views — run the executive view in leadership standups, the team view in ops reviews, and the rep view in 1-on-1s.</p>
+
+    <div class="view-tabs" id="viewTabs">
+      <button class="view-tab active" onclick="switchView('exec')">Executive</button>
+      <button class="view-tab" onclick="switchView('team')">Team</button>
+      <button class="view-tab" onclick="switchView('rep')">Rep</button>
+    </div>
+
+    <div class="view-content active" id="exec">
+      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem;">Big-picture health. Look for trends week-over-week — is go-live time improving, and is revenue activating faster?</p>
+      <div class="dash-grid">
+        <div class="metric-card"><div class="metric-label">Avg days to go-live</div><div class="metric-val" style="color:#1D9E75;">11.4 d</div></div>
+        <div class="metric-card"><div class="metric-label">% live within 14 days</div><div class="metric-val" style="color:#378ADD;">72%</div></div>
+        <div class="metric-card"><div class="metric-label">Onboarding completion</div><div class="metric-val">84%</div></div>
+        <div class="metric-card"><div class="metric-label">Revenue activated</div><div class="metric-val" style="color:#1D9E75;">$148k</div></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">★</span><span>Target: 80%+ of customers go live within 14 days. If that number drops below 60%, look at Stage 2 (Pre-Setup) — that's usually where delays originate.</span></div>
+    </div>
+
+    <div class="view-content" id="team">
+      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem;">Where is the work sitting? Use this to unblock bottlenecks before they become stalled accounts.</p>
+      <div class="card" style="padding:0.75rem 1rem;">
+        <div class="metric-row"><span>Pipeline by stage</span><span style="font-size:12px;color:var(--color-text-tertiary);">Count per stage</span></div>
+        <div class="metric-row"><span>Stalled accounts</span><span class="tag tag-warn">Highlight</span></div>
+        <div class="metric-row"><span>Avg time in stage</span><span style="font-size:12px;color:var(--color-text-tertiary);">Days per stage</span></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">★</span><span>Any account spending more than 5 days in a single stage without a logged activity should auto-move to Stage 8 (At Risk). Build this as a Salesforce flow.</span></div>
+    </div>
+
+    <div class="view-content" id="rep">
+      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem;">Individual performance. Use in 1-on-1s — not to penalize, but to identify coaching opportunities.</p>
+      <div class="card" style="padding:0.75rem 1rem;">
+        <div class="metric-row"><span>Avg go-live time per onboarder</span><span style="font-size:12px;color:var(--color-text-tertiary);">Days</span></div>
+        <div class="metric-row"><span>Activation rate</span><span style="font-size:12px;color:var(--color-text-tertiary);">% reached Stage 4+</span></div>
+        <div class="metric-row"><span>Expansion feature adoption</span><span style="font-size:12px;color:var(--color-text-tertiary);">% with rev. features live</span></div>
+      </div>
+      <div class="tip-box"><span class="tip-icon">★</span><span>The best onboarders have high expansion adoption, not just fast go-live. Someone going live in 8 days but never enabling packages is leaving revenue on the table.</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+  function toggleStage(header) {
+    const body = header.nextElementSibling;
+    const chev = header.querySelector('.chevron');
+    body.classList.toggle('open');
+    chev.classList.toggle('open');
+  }
+  function switchView(id) {
+    document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
